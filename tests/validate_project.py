@@ -9,6 +9,11 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PS1_FILES = [
@@ -160,8 +165,12 @@ def verify_encodings():
 
 
 if __name__ == "__main__":
-    normalize_encodings()
-    verify_encodings()
-    verify_xaml_and_bindings()
-    verify_powershell_functions()
-    print("[SUCCESS] Все проверки проекта WinPass Admin Suite пройдены успешно!")
+    try:
+        normalize_encodings()
+        verify_encodings()
+        verify_xaml_and_bindings()
+        verify_powershell_functions()
+        print("[SUCCESS] Все проверки проекта WinPass Admin Suite пройдены успешно!")
+    except Exception as exc:
+        print(f"::error title=ValidateProjectError::{exc}")
+        raise
