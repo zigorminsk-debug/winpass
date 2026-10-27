@@ -1,0 +1,116 @@
+name: Build WinPass Bootable WinPE ISO
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Тег релиза для публикации готового ISO-образа'
+        required: false
+        default: 'v2.0-winpe'
+
+permissions:
+  contents: write
+
+jobs:
+  build-winpe-iso:
+    name: Сборка загрузочного образа WinPass WinPE (x64 BIOS/UEFI)
+    runs-on: windows-2022
+    timeout-minutes: 45
+
+    steps:
+      - name: Получение исходного кода репозитория
+        uses: actions/checkout@v4
+
+      - name: Проверка кодировок, XAML и модулей PowerShell
+        shell: pwsh
+        run: |
+          python tests/validate_project.py
+
+      - name: Сборка портативного ZIP-архива WinPass Admin Suite
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $outDir = Join-Path $env:GITHUB_WORKSPACE "output"
+          $stageDir = Join-Path $env:TEMP "WinPass-Admin-Portable"
+          New-Item -Path $outDir -ItemType Directory -Force | Out-Null
+          if (Test-Path $stageDir) { Remove-Item $stageDir -Recurse -Force }
+          New-Item -Path $stageDir -ItemType Directory -Force | Out-Null
+
+          foreach ($sub in @('modules', 'ui', 'logs')) {
+              New-Item -Path (Join-Path $stageDir $sub) -ItemType Directory -Force | Out-Null
+          }
+
+          foreach ($file in @('WinPass-GUI.ps1', 'WinPass-WinPE-GUI.ps1', 'Run-WinPass.bat', 'Start-WinPE.cmd', 'README.md')) {
+              Copy-Item -Path (Join-Path $env:GITHUB_WORKSPACE $file) -Destination $stageDir -Force
+          }
+          Copy-Item -Path (Join-Path $env:GITHUB_WORKSPACE "modules\*.ps1") -Destination (Join-Path $stageDir "modules") -Force
+          Copy-Item -Path (Join-Path $env:GITHUB_WORKSPACE "ui\*.xaml") -Destination (Join-Path $stageDir "ui") -Force
+
+          $zipPath = Join-Path $outDir "WinPass-Portable-v2.0.zip"
+          Compress-Archive -Path "$stageDir\*" -DestinationPath $zipPath -Force
+          Write-Host "[OK] Портативный архив создан: $zipPath"
+
+      - name: Сборка загрузочного образа WinPE (WinPass-WinPE-amd64.iso)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $isoPath = Join-Path $env:GITHUB_WORKSPACE "output\WinPass-WinPE-amd64.iso"
+          & "$env:GITHUB_WORKSPACE\winpe\Build-WinPassWinPE.ps1" -OutputIsoPath $isoPath
+
+      - name: Вывод сводки сборки в GitHub Step Summary
+        shell: pwsh
+        run: |
+          $isoFile = Get-Item "output/WinPass-WinPE-amd64.iso"
+          $zipFile = Get-Item "output/WinPass-Portable-v2.0.zip"
+          $shaLine = Get-Content "output/WinPass-WinPE-amd64.iso.sha256.txt" -Raw
+          $isoMb   = [Math]::Round($isoFile.Length / 1MB, 2)
+          $zipKb   = [Math]::Round($zipFile.Length / 1KB, 2)
+
+          $summary = @"
+          ## 💿 Готовый загрузочный образ WinPass WinPE ISO собран!
+
+          | Файл | Назначение | Размер |
+          |---|---|---|
+          | **`WinPass-WinPE-amd64.iso`** | Загрузочный образ Windows PE x64 (BIOS + UEFI) с автозапуском GUI `WinPass Admin Suite` | **$isoMb МБ** |
+          | **`WinPass-Portable-v2.0.zip`** | Портативная версия для запуска из-под обычной Windows (`Run-WinPass.bat`) | **$zipKb КБ** |
+
+          ### Контрольная сумма SHA-256
+          ```text
+          $($shaLine.Trim())
+          ```
+          "@
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
+
+      - name: Загрузка ISO-образа в артефакты сборки GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: WinPass-WinPE-Bootable-ISO
+          path: |
+            output/WinPass-WinPE-amd64.iso
+            output/WinPass-WinPE-amd64.iso.sha256.txt
+            output/WinPass-Portable-v2.0.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Публикация готового ISO-образа в GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag || 'v2.0-winpe' }}
+          target_commitish: ${{ github.sha }}
+          name: "WinPass Admin Suite v2.0 — Загрузочный образ WinPE ISO (x64 BIOS/UEFI)"
+          body: |
+            ### 🔑 Готовый загрузочный образ WinPass Admin Suite v2.0 (Windows PE x64)
+
+            В состав релиза входят:
+            1. **`WinPass-WinPE-amd64.iso`** — готовый загрузочный образ **Windows PE (x64, поддержка Legacy BIOS и UEFI)** с интегрированными компонентами `.NET Framework`, `Windows PowerShell` и графической средой **WinPass Admin Suite**. При загрузке с флешки (Rufus / Ventoy) или в виртуальной машине автоматически запускает графическое окно сброса паролей.
+            2. **`WinPass-Portable-v2.0.zip`** — портативный архив программы для запуска из-под работающей ОС Windows (`Run-WinPass.bat`).
+            3. **`WinPass-WinPE-amd64.iso.sha256.txt`** — контрольная сумма SHA-256.
+          files: |
+            output/WinPass-WinPE-amd64.iso
+            output/WinPass-WinPE-amd64.iso.sha256.txt
+            output/WinPass-Portable-v2.0.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

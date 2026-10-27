@@ -1,0 +1,750 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinPass Admin Suite v2.0 — Восстановление и сброс паролей Windows"
+        Width="1240" Height="820" MinWidth="1050" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#0F172A"
+        Foreground="#F8FAFC"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <!-- Стиль основных кнопок -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#0284C7"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0369A1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#075985"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#334155"/>
+                                <Setter Property="Foreground" Value="#64748B"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Зеленая кнопка действия (Успех / Применить) -->
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#059669"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#047857"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#065F46"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Оранжевая кнопка (Предупреждение / Спецдействие) -->
+        <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#D97706"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#B45309"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Вторичная темная кнопка -->
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#334155"/>
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="#475569" BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#475569"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Поля ввода -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="CaretBrush" Value="#38BDF8"/>
+            <Setter Property="BorderBrush" Value="#475569"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Флажки CheckBox -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,4,0,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Таблицы DataGrid -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#F1F5F9"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="#1E293B"/>
+            <Setter Property="AlternatingRowBackground" Value="#162032"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#334155"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+            <Setter Property="RowHeight" Value="34"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#38BDF8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0369A1"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Вкладки TabItem -->
+        <Style TargetType="TabItem">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border" Background="#1E293B" BorderBrush="#334155" BorderThickness="1,1,1,0" CornerRadius="6,6,0,0" Margin="0,0,4,0" Padding="{TemplateBinding Padding}" Cursor="Hand">
+                            <ContentPresenter x:Name="ContentSite" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#0284C7"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#38BDF8"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#F8FAFC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Верхняя панель статуса системы и привилегий -->
+        <Border Grid.Row="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,0,1" Padding="20,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#0284C7" CornerRadius="8" Width="40" Height="40" Margin="0,0,14,0">
+                        <TextBlock Text="🔑" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel>
+                        <TextBlock Text="WinPass Admin Suite" FontSize="19" FontWeight="Bold" Foreground="#F8FAFC"/>
+                        <TextBlock x:Name="TxtSystemSummary" Text="Загрузка сведений о системе..." FontSize="12.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border x:Name="BadgeAdminMode" Background="#065F46" CornerRadius="6" Padding="12,6" Margin="0,0,10,0">
+                        <TextBlock x:Name="TxtAdminMode" Text="Права: Администратор" FontSize="12.5" FontWeight="SemiBold" Foreground="#6EE7B7"/>
+                    </Border>
+                    <Border x:Name="BadgeEnvironment" Background="#1E3A8A" CornerRadius="6" Padding="12,6" Margin="0,0,10,0">
+                        <TextBlock x:Name="TxtEnvironment" Text="Режим: Windows Online" FontSize="12.5" FontWeight="SemiBold" Foreground="#93C5FD"/>
+                    </Border>
+                    <Button x:Name="BtnQuickExportHtml" Content="📄 Быстрый HTML-отчет" Style="{StaticResource SecondaryButton}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Основная рабочая область с 6 вкладками -->
+        <TabControl x:Name="MainTabControl" Grid.Row="1" Background="#0F172A" BorderBrush="#334155" BorderThickness="0,1,0,0" Margin="16,12,16,8" Padding="14">
+
+            <!-- ВКЛАДКА 1: ЛОКАЛЬНЫЕ ПОЛЬЗОВАТЕЛИ И СБРОС ПАРОЛЕЙ -->
+            <TabItem Header="👤 1. Учетные записи и сброс паролей">
+                <Grid Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.35*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Левая колонка: Таблица пользователей и быстрые фильтры -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Поиск:" VerticalAlignment="Center" Foreground="#94A3B8" Margin="0,0,8,0"/>
+                                <TextBox x:Name="TxtSearchUser" Grid.Column="1" Margin="0,0,12,0" ToolTip="Введите имя пользователя или описание"/>
+                                <CheckBox x:Name="ChkOnlyEnabledUsers" Grid.Column="2" Content="Только активные" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <Button x:Name="BtnRefreshUsers" Grid.Column="3" Content="🔄 Обновить" Style="{StaticResource SecondaryButton}"/>
+                            </Grid>
+                        </Border>
+
+                        <DataGrid x:Name="GridLocalUsers" Grid.Row="1" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Логин" Binding="{Binding Name}" Width="130"/>
+                                <DataGridTextColumn Header="Полное имя" Binding="{Binding FullName}" Width="140"/>
+                                <DataGridTextColumn Header="Роль" Binding="{Binding RoleText}" Width="125"/>
+                                <DataGridTextColumn Header="Статус" Binding="{Binding StatusText}" Width="90"/>
+                                <DataGridTextColumn Header="Блокировка" Binding="{Binding LockedText}" Width="105"/>
+                                <DataGridTextColumn Header="Последний вход" Binding="{Binding LastLogon}" Width="120"/>
+                                <DataGridTextColumn Header="Пароль изменен" Binding="{Binding PasswordLastSet}" Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Нижняя панель групповых и аварийных операций -->
+                        <Border Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="12" Margin="0,10,0,0">
+                            <WrapPanel Orientation="Horizontal">
+                                <Button x:Name="BtnEnableUser" Content="✅ Включить УЗ" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+                                <Button x:Name="BtnDisableUser" Content="⛔ Отключить УЗ" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+                                <Button x:Name="BtnUnlockUser" Content="🔓 Разблокировать" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+                                <Button x:Name="BtnAddAdminGroup" Content="🛡️ Дать права Админа" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+                                <Button x:Name="BtnRemoveAdminGroup" Content="👤 Убрать из Админов" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+                                <Button x:Name="BtnActivateBuiltInAdmin" Content="⚡ Включить встроенного Админа (RID 500)" Style="{StaticResource WarningButton}" Margin="0,0,0,4"/>
+                            </WrapPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Правая колонка: Панель сброса пароля и генератор -->
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Карточка сброса пароля выбранного пользователя -->
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Сброс и восстановление пароля" FontSize="16" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock x:Name="TxtSelectedUserHeader" Text="Выбран пользователь: (не выбран)" FontSize="13.5" FontWeight="SemiBold" Foreground="#F8FAFC" Margin="0,6,0,2"/>
+                                    <TextBlock x:Name="TxtSelectedUserSid" Text="SID: —" FontSize="11.5" Foreground="#94A3B8" Margin="0,0,0,12"/>
+
+                                    <TextBlock Text="Новый пароль пользователя:" Foreground="#CBD5E1" Margin="0,0,0,4"/>
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox x:Name="TxtNewPassword" Grid.Column="0" FontFamily="Consolas" FontSize="14" FontWeight="Bold"/>
+                                        <Button x:Name="BtnGeneratePass" Grid.Column="1" Content="🎲 Сгенерировать" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"/>
+                                        <Button x:Name="BtnCopyNewPass" Grid.Column="2" Content="📋 Копия" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"/>
+                                    </Grid>
+
+                                    <TextBlock x:Name="TxtPasswordStrength" Text="Надежность: —" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,10"/>
+
+                                    <!-- Параметры генератора паролей -->
+                                    <Border Background="#0F172A" CornerRadius="6" Padding="10" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <Grid Margin="0,0,0,4">
+                                                <TextBlock Text="Длина генерируемого пароля:" Foreground="#94A3B8" FontSize="12"/>
+                                                <TextBlock x:Name="TxtGenLengthVal" Text="12 символов" HorizontalAlignment="Right" Foreground="#38BDF8" FontSize="12" FontWeight="Bold"/>
+                                            </Grid>
+                                            <Slider x:Name="SliderPassLength" Minimum="6" Maximum="32" Value="12" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,0,6"/>
+                                            <WrapPanel>
+                                                <CheckBox x:Name="ChkGenUpper" Content="A-Z" IsChecked="True" Margin="0,0,12,0"/>
+                                                <CheckBox x:Name="ChkGenLower" Content="a-z" IsChecked="True" Margin="0,0,12,0"/>
+                                                <CheckBox x:Name="ChkGenDigits" Content="0-9" IsChecked="True" Margin="0,0,12,0"/>
+                                                <CheckBox x:Name="ChkGenSpecial" Content="!@#$%" IsChecked="True"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Опции сброса -->
+                                    <CheckBox x:Name="ChkPassNeverExpires" Content="Срок действия пароля не ограничен (PasswordNeverExpires)" IsChecked="True"/>
+                                    <CheckBox x:Name="ChkMustChangeNextLogon" Content="Потребовать смену пароля при следующем входе пользователя" IsChecked="False"/>
+                                    <CheckBox x:Name="ChkUnlockOnReset" Content="Автоматически включить и разблокировать учетную запись" IsChecked="True"/>
+
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="8"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button x:Name="BtnApplyNewPassword" Grid.Column="0" Content="🔑 Установить пароль" Style="{StaticResource SuccessButton}"/>
+                                        <Button x:Name="BtnSetBlankPassword" Grid.Column="2" Content="⭕ Сбросить (без пароля)" Style="{StaticResource WarningButton}"/>
+                                    </Grid>
+
+                                    <Button x:Name="BtnSaveHandoverCard" Content="🖨️ Сохранить карточку-памятку с паролем для пользователя" Style="{StaticResource SecondaryButton}" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Карточка создания резервного администратора -->
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="Создание резервного Администратора ПК" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Если профиль пользователя поврежден, создайте новую учетную запись с правами локального администратора:" FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,4,0,10"/>
+
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Логин админа:" VerticalAlignment="Center" Foreground="#CBD5E1"/>
+                                        <TextBox x:Name="TxtEmergencyAdminName" Grid.Column="1" Text="AdminRecovery"/>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Пароль админа:" VerticalAlignment="Center" Foreground="#CBD5E1"/>
+                                        <TextBox x:Name="TxtEmergencyAdminPass" Grid.Column="1" FontFamily="Consolas" Text="WinPass#2026!"/>
+                                    </Grid>
+
+                                    <Button x:Name="BtnCreateEmergencyAdmin" Content="➕ Создать резервного администратора" Style="{StaticResource PrimaryButton}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ВКЛАДКА 2: СОХРАНЕННЫЕ ПАРОЛИ WI-FI -->
+            <TabItem Header="📶 2. Пароли Wi-Fi сетей">
+                <Grid Margin="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="14" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Восстановление сохраненных ключей безопасности беспроводных сетей (WLAN)" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                <TextBlock Text="Извлекает открытые пароли (key=clear) из всех сохраненных профилей службы автонастройки WLAN независимо от языка Windows." FontSize="12.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="BtnRefreshWifi" Content="🔄 Сканировать Wi-Fi профили" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"/>
+                                <Button x:Name="BtnCopyWifiPass" Content="📋 Скопировать пароль выбранной сети" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                                <Button x:Name="BtnExportWifiCsv" Content="💾 Экспорт в CSV" Style="{StaticResource SecondaryButton}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <DataGrid x:Name="GridWifiPasswords" Grid.Row="1" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Имя сети (SSID)" Binding="{Binding SSID}" Width="240"/>
+                            <DataGridTextColumn Header="Пароль (Ключ безопасности)" Binding="{Binding Password}" Width="260"/>
+                            <DataGridTextColumn Header="Проверка подлинности" Binding="{Binding Authentication}" Width="180"/>
+                            <DataGridTextColumn Header="Шифрование" Binding="{Binding Encryption}" Width="140"/>
+                            <DataGridTextColumn Header="Режим подключения" Binding="{Binding ConnectionMode}" Width="140"/>
+                            <DataGridTextColumn Header="Источник" Binding="{Binding Source}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="12" Margin="0,10,0,0">
+                        <TextBlock x:Name="TxtWifiSummary" Text="Нажмите «Сканировать Wi-Fi профили» для извлечения сохраненных паролей." Foreground="#CBD5E1"/>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ВКЛАДКА 3: ДИСПЕТЧЕР УЧЕТНЫХ ДАННЫХ И AUTOLOGON -->
+            <TabItem Header="🔐 3. Хранилище Windows (Vault и AutoLogon)">
+                <Grid Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Левая часть: Таблица Credential Manager и Web Vault -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Windows Credential Manager и Password Vault" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Сохраненные пароли RDP, сетевых папок SMB, веб-сайтов и приложений текущего профиля." FontSize="12" Foreground="#94A3B8"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button x:Name="BtnRefreshCreds" Content="🔄 Извлечь учетные данные" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"/>
+                                    <Button x:Name="BtnCopyCredPass" Content="📋 Скопировать секрет" Style="{StaticResource SecondaryButton}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <DataGrid x:Name="GridSavedCredentials" Grid.Row="1" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Хранилище" Binding="{Binding Source}" Width="140"/>
+                                <DataGridTextColumn Header="Ресурс / Сервер (Target)" Binding="{Binding Target}" Width="210"/>
+                                <DataGridTextColumn Header="Имя пользователя" Binding="{Binding UserName}" Width="150"/>
+                                <DataGridTextColumn Header="Пароль / Токен" Binding="{Binding Password}" Width="200"/>
+                                <DataGridTextColumn Header="Тип" Binding="{Binding Type}" Width="140"/>
+                                <DataGridTextColumn Header="Обновлено" Binding="{Binding LastUpdated}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                    <!-- Правая часть: Winlogon AutoAdminLogon -->
+                    <Border Grid.Column="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Автоматический вход Windows (Winlogon)" FontSize="15.5" FontWeight="Bold" Foreground="#38BDF8"/>
+                            <TextBlock Text="Проверка и настройка автоматического входа в систему без запроса пароля (реестр HKLM\...\Winlogon)." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,4,0,14"/>
+
+                            <Border Background="#0F172A" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock x:Name="TxtAutoLogonState" Text="Статус AutoLogon: Не проверено" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,6"/>
+                                    <TextBlock x:Name="TxtAutoLogonCurrentUser" Text="Текущий пользователь: —" Foreground="#CBD5E1" Margin="0,0,0,4"/>
+                                    <TextBlock x:Name="TxtAutoLogonCurrentPass" Text="Сохраненный пароль: —" Foreground="#F59E0B" FontFamily="Consolas"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Button x:Name="BtnReadAutoLogon" Content="🔍 Прочитать настройки AutoLogon из реестра" Style="{StaticResource SecondaryButton}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Настроить AutoLogon для пользователя:" FontWeight="SemiBold" Foreground="#E2E8F0" Margin="0,0,0,8"/>
+
+                            <TextBlock Text="Имя пользователя (логин):" Foreground="#94A3B8" Margin="0,0,0,4"/>
+                            <TextBox x:Name="TxtAutoLogonUser" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Пароль для автологона:" Foreground="#94A3B8" Margin="0,0,0,4"/>
+                            <TextBox x:Name="TxtAutoLogonPass" FontFamily="Consolas" Margin="0,0,0,14"/>
+
+                            <Button x:Name="BtnEnableAutoLogon" Content="✅ Включить автоматический вход" Style="{StaticResource SuccessButton}" Margin="0,0,0,8"/>
+                            <Button x:Name="BtnDisableAutoLogon" Content="🗑️ Отключить AutoLogon и очистить пароль в реестре" Style="{StaticResource WarningButton}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ВКЛАДКА 4: РЕЖИМ WINPE И ОФЛАЙН-ВОССТАНОВЛЕНИЕ -->
+            <TabItem Header="💿 4. Режим WinPE и Офлайн-инструменты">
+                <Grid Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.25*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Левая колонка: Обнаруженные диски с Windows и офлайн-пользователи куста SAM -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="170"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="1. Обнаруженные копии Windows на дисках ПК" FontSize="14.5" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Выберите раздел с установленной ОС Windows для работы с её реестром SAM или системными файлами." FontSize="12" Foreground="#94A3B8"/>
+                                </StackPanel>
+                                <Button x:Name="BtnScanOfflineDrives" Grid.Column="1" Content="🔄 Найти диски Windows" Style="{StaticResource PrimaryButton}"/>
+                            </Grid>
+                        </Border>
+
+                        <DataGrid x:Name="GridOfflineInstallations" Grid.Row="1" AutoGenerateColumns="False" Margin="0,0,0,12">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Диск" Binding="{Binding DriveLetter}" Width="75"/>
+                                <DataGridTextColumn Header="Режим" Binding="{Binding ModeText}" Width="170"/>
+                                <DataGridTextColumn Header="Перехват (sethc/utilman)" Binding="{Binding BypassStatusText}" Width="210"/>
+                                <DataGridTextColumn Header="Путь к кусту SAM" Binding="{Binding SamPath}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Border Grid.Row="2" Background="#1E293B" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="2. Офлайн-редактор куста реестра SAM (F и V структуры)" FontSize="14.5" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Прямой сброс пароля на пустой и разблокировка учетных записей в файле Windows\System32\config\SAM." FontSize="12" Foreground="#94A3B8"/>
+                                </StackPanel>
+                                <Button x:Name="BtnLoadOfflineSam" Grid.Column="1" Content="📂 Прочитать SAM" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
+                                <Button x:Name="BtnClearOfflineSamPassword" Grid.Column="2" Content="🔑 Сбросить пароль в SAM" Style="{StaticResource SuccessButton}" Margin="0,0,6,0"/>
+                                <Button x:Name="BtnUnlockOfflineSamUser" Grid.Column="3" Content="🔓 Разблокировать" Style="{StaticResource PrimaryButton}"/>
+                            </Grid>
+                        </Border>
+
+                        <DataGrid x:Name="GridOfflineSamUsers" Grid.Row="3" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Пользователь" Binding="{Binding UserName}" Width="140"/>
+                                <DataGridTextColumn Header="RID" Binding="{Binding RID}" Width="65"/>
+                                <DataGridTextColumn Header="RID (Hex)" Binding="{Binding RIDHex}" Width="85"/>
+                                <DataGridTextColumn Header="Статус в SAM" Binding="{Binding StatusText}" Width="125"/>
+                                <DataGridTextColumn Header="Пароль в SAM" Binding="{Binding PasswordStateText}" Width="140"/>
+                                <DataGridTextColumn Header="Блокировка" Binding="{Binding LockedText}" Width="120"/>
+                                <DataGridTextColumn Header="Ошибок входа" Binding="{Binding FailedLogonCount}" Width="100"/>
+                                <DataGridTextColumn Header="Флаги ACB" Binding="{Binding ACBFlagsHex}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                    <!-- Правая колонка: Офлайн-инструменты (Sticky Keys, сброс ПИН-кода, флешка) -->
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Подмена sethc.exe / utilman.exe -->
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Экранный перехват (Sticky Keys / Utilman)" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Позволяет на экране входа Windows открыть консоль с правами SYSTEM (нажав 5 раз клавишу SHIFT) и запустить WinPass-GUI для сброса пароля любой учетной записи, без повреждения DPAPI-ключей шифрования." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,4,0,12"/>
+
+                                    <Button x:Name="BtnInstallSethcBypass" Content="⚡ Установить перехват 5x SHIFT (sethc.exe -> cmd.exe)" Style="{StaticResource WarningButton}" Margin="0,0,0,8"/>
+                                    <Button x:Name="BtnInstallUtilmanBypass" Content="🛠️ Установить перехват Спец. возможностей (utilman.exe)" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8"/>
+                                    <Button x:Name="BtnRestoreOfflineBypass" Content="🛡️ Восстановить оригинальные системные файлы (.bak)" Style="{StaticResource SuccessButton}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Сброс ПИН-кода Windows Hello (NGC) -->
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Сброс ПИН-кода Windows Hello (контейнер NGC)" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Если пользователь забыл ПИН-код или при ошибке криптопровайдера TPM не может войти на экране блокировки, очистка папки Ngc переключает Windows обратно на вход по обычному паролю." FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,4,0,12"/>
+
+                                    <Button x:Name="BtnResetOfflinePin" Content="🧹 Очистить контейнер ПИН-кода (с резервной копией)" Style="{StaticResource PrimaryButton}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Создание портативной флешки администратора -->
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="Запись портативного пакета на USB / WinPE" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Text="Скопировать WinPass Admin Suite вместе со скриптом запуска Start-WinPE.cmd на флешку или внешний диск:" FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,4,0,10"/>
+
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Целевой путь / диск:" VerticalAlignment="Center" Foreground="#CBD5E1" Margin="0,0,8,0"/>
+                                        <TextBox x:Name="TxtUsbTargetPath" Grid.Column="1" Text="D:\"/>
+                                    </Grid>
+
+                                    <Button x:Name="BtnExportPortableUsb" Content="💾 Записать WinPass Admin Suite на носитель" Style="{StaticResource PrimaryButton}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ВКЛАДКА 5: ЛОКАЛЬНЫЕ ПОЛИТИКИ ПАРОЛЕЙ -->
+            <TabItem Header="🛡️ 5. Политики безопасности паролей">
+                <Grid Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Параметры локальной политики паролей (secedit / net accounts)" FontSize="16" FontWeight="Bold" Foreground="#38BDF8"/>
+                            <TextBlock Text="Если Windows запрещает задать пользователю простой или короткий пароль (ошибка 2245), вы можете отключить требование сложности и минимальную длину пароля здесь." FontSize="12.5" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,4,0,18"/>
+
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="280"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Минимальная длина пароля (0–14):" VerticalAlignment="Center" Foreground="#E2E8F0"/>
+                                <TextBox x:Name="TxtPolicyMinLen" Grid.Column="1" Text="0"/>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="280"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Максимальный срок действия (дней, 0 = бессрочно):" VerticalAlignment="Center" Foreground="#E2E8F0"/>
+                                <TextBox x:Name="TxtPolicyMaxAge" Grid.Column="1" Text="0"/>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="280"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Порог блокировки при ошибках (0 = не блокировать):" VerticalAlignment="Center" Foreground="#E2E8F0"/>
+                                <TextBox x:Name="TxtPolicyLockout" Grid.Column="1" Text="0"/>
+                            </Grid>
+
+                            <CheckBox x:Name="ChkPolicyComplexity" Content="Требовать соответствие пароля требованиям сложности (PasswordComplexity)" Margin="0,0,0,18"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="BtnRefreshPolicy" Grid.Column="0" Content="🔄 Прочитать текущую политику" Style="{StaticResource SecondaryButton}"/>
+                                <Button x:Name="BtnApplyPolicy" Grid.Column="2" Content="✅ Применить параметры политики" Style="{StaticResource SuccessButton}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Быстрые профили безопасности" FontSize="16" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,8"/>
+                            <TextBlock Text="Применение готового набора настроек в один клик:" FontSize="12.5" Foreground="#94A3B8" Margin="0,0,0,16"/>
+
+                            <Button x:Name="BtnPresetHomeRelaxed" Content="🏠 Домашний / Сервисный режим (разрешить простые и пустые пароли)" Style="{StaticResource WarningButton}" Margin="0,0,0,12"/>
+                            <Button x:Name="BtnPresetStandardWin" Content="💻 Стандартная политика Windows (мин. 8 символов, без блокировки)" Style="{StaticResource PrimaryButton}" Margin="0,0,0,12"/>
+                            <Button x:Name="BtnPresetEnterprise" Content="🏢 Корпоративная безопасность (сложный пароль 10+ симв., порог 5 попыток)" Style="{StaticResource SecondaryButton}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ВКЛАДКА 6: ЖУРНАЛ ДЕЙСТВИЙ И ОТЧЕТЫ -->
+            <TabItem Header="📋 6. Журнал аудита и экспорт">
+                <Grid Margin="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="14" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Журнал действий администратора и экспорт сводного отчета" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                <TextBlock Text="Все операции по сбросу паролей и изменению настроек фиксируются с меткой времени и сохраняются в logs/winpass_audit.log." FontSize="12.5" Foreground="#94A3B8"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="BtnExportFullHtmlReport" Content="📄 Сохранить полный HTML-отчет" Style="{StaticResource SuccessButton}" Margin="0,0,8,0"/>
+                                <Button x:Name="BtnOpenLogsFolder" Content="📂 Открыть папку логов" Style="{StaticResource SecondaryButton}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <DataGrid x:Name="GridAuditLog" Grid.Row="1" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Время" Binding="{Binding Timestamp}" Width="150"/>
+                            <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="95"/>
+                            <DataGridTextColumn Header="Оператор" Binding="{Binding Operator}" Width="170"/>
+                            <DataGridTextColumn Header="Операция" Binding="{Binding Action}" Width="220"/>
+                            <DataGridTextColumn Header="Подробности" Binding="{Binding Details}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Нижняя строка состояния -->
+        <Border Grid.Row="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,1,0,0" Padding="20,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="TxtStatusBar" Grid.Column="0" Text="Готово к работе." FontSize="12.5" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="WinPass Admin Suite • PowerShell + WPF Native" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
